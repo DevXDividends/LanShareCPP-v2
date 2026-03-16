@@ -1,0 +1,313 @@
+@import '@fontsource/jetbrains-mono';
+@import '@fontsource/inter';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --bg-primary:    #050810;
+  --bg-secondary:  #0a0e1a;
+  --bg-card:       rgba(255, 255, 255, 0.03);
+  --cyan:          #00ffe7;
+  --purple:        #7000ff;
+  --magenta:       #ff2d78;
+  --green:         #39ff14;
+  --text-primary:  #e2e8f0;
+  --text-muted:    #4a5568;
+  --border:        rgba(0, 255, 231, 0.15);
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: 'Inter', sans-serif;
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+}
+
+/* ── Scrollbar ─────────────────────────────── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--cyan);
+  border-radius: 2px;
+  opacity: 0.3;
+}
+
+/* ── Animated Grid Background ──────────────── */
+.grid-bg {
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0,255,231,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,255,231,0.03) 1px, transparent 1px);
+  background-size: 50px 50px;
+  animation: gridMove 20s linear infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+@keyframes gridMove {
+  0%   { transform: translateY(0); }
+  100% { transform: translateY(50px); }
+}
+
+/* ── Scanlines ─────────────────────────────── */
+.scanlines {
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.08) 2px,
+    rgba(0, 0, 0, 0.08) 4px
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ── Glass Card ────────────────────────────── */
+.glass {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(0, 255, 231, 0.12);
+  border-radius: 16px;
+}
+
+.glass-strong {
+  background: rgba(0, 255, 231, 0.05);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border: 1px solid rgba(0, 255, 231, 0.2);
+  border-radius: 16px;
+}
+
+/* ── Neon Glow ─────────────────────────────── */
+.glow-cyan  { box-shadow: 0 0 20px rgba(0,255,231,0.4), 0 0 40px rgba(0,255,231,0.1); }
+.glow-purple{ box-shadow: 0 0 20px rgba(112,0,255,0.4), 0 0 40px rgba(112,0,255,0.1); }
+.glow-magenta{ box-shadow: 0 0 20px rgba(255,45,120,0.4); }
+
+.text-glow-cyan {
+  color: var(--cyan);
+  text-shadow: 0 0 10px rgba(0,255,231,0.8), 0 0 30px rgba(0,255,231,0.4);
+}
+
+.text-glow-purple {
+  color: #a855f7;
+  text-shadow: 0 0 10px rgba(168,85,247,0.8);
+}
+
+/* ── Gradient Border ───────────────────────── */
+.gradient-border {
+  position: relative;
+  border-radius: 16px;
+}
+.gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: 17px;
+  background: linear-gradient(135deg, var(--cyan), var(--purple), var(--magenta));
+  z-index: -1;
+  opacity: 0.6;
+}
+
+/* ── Neon Button ───────────────────────────── */
+.btn-neon {
+  position: relative;
+  padding: 10px 28px;
+  background: transparent;
+  border: 1px solid var(--cyan);
+  color: var(--cyan);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+.btn-neon::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--cyan);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: -1;
+}
+.btn-neon:hover {
+  color: var(--bg-primary);
+  box-shadow: 0 0 25px rgba(0,255,231,0.6);
+}
+.btn-neon:hover::before { opacity: 1; }
+
+.btn-neon-purple {
+  border-color: #a855f7;
+  color: #a855f7;
+}
+.btn-neon-purple:hover {
+  color: var(--bg-primary);
+  box-shadow: 0 0 25px rgba(168,85,247,0.6);
+}
+.btn-neon-purple::before { background: #a855f7; }
+
+/* ── Input ─────────────────────────────────── */
+.input-neon {
+  width: 100%;
+  background: rgba(0,255,231,0.03);
+  border: 1px solid rgba(0,255,231,0.2);
+  color: var(--text-primary);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  outline: none;
+  transition: all 0.3s ease;
+}
+.input-neon:focus {
+  border-color: var(--cyan);
+  box-shadow: 0 0 15px rgba(0,255,231,0.2);
+  background: rgba(0,255,231,0.05);
+}
+.input-neon::placeholder { color: var(--text-muted); }
+
+/* ── Message Bubbles ───────────────────────── */
+.bubble-own {
+  background: linear-gradient(135deg, rgba(0,255,231,0.15), rgba(112,0,255,0.1));
+  border: 1px solid rgba(0,255,231,0.25);
+  border-radius: 16px 4px 16px 16px;
+  padding: 10px 14px;
+  max-width: 70%;
+  margin-left: auto;
+  animation: bubbleIn 0.3s ease;
+}
+
+.bubble-other {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 4px 16px 16px 16px;
+  padding: 10px 14px;
+  max-width: 70%;
+  animation: bubbleIn 0.3s ease;
+}
+
+@keyframes bubbleIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Typing Indicator ──────────────────────── */
+.typing-dot {
+  width: 6px; height: 6px;
+  background: var(--cyan);
+  border-radius: 50%;
+  animation: typingBounce 1.2s infinite;
+  display: inline-block;
+}
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typingBounce {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30%            { transform: translateY(-6px); opacity: 1; }
+}
+
+/* ── Sidebar Contact Item ──────────────────── */
+.contact-item {
+  padding: 10px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+  font-size: 13px;
+}
+.contact-item:hover {
+  background: rgba(0,255,231,0.05);
+  border-color: rgba(0,255,231,0.15);
+}
+.contact-item.active {
+  background: rgba(0,255,231,0.08);
+  border-color: rgba(0,255,231,0.3);
+  box-shadow: inset 3px 0 0 var(--cyan);
+}
+
+/* ── Status Dot ────────────────────────────── */
+.status-online  { background: var(--green);   box-shadow: 0 0 6px var(--green); }
+.status-offline { background: var(--text-muted); }
+
+/* ── Unread Badge ──────────────────────────── */
+.unread-badge {
+  background: var(--magenta);
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 999px;
+  box-shadow: 0 0 8px rgba(255,45,120,0.6);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* ── File Transfer Card ────────────────────── */
+.file-card {
+  background: rgba(112,0,255,0.08);
+  border: 1px solid rgba(112,0,255,0.25);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 12px;
+  font-family: 'JetBrains Mono', monospace;
+}
+.file-progress-bar {
+  height: 3px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 2px;
+  margin-top: 8px;
+  overflow: hidden;
+}
+.file-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--cyan), var(--purple));
+  border-radius: 2px;
+  transition: width 0.3s ease;
+  box-shadow: 0 0 8px var(--cyan);
+}
+
+/* ── Flicker Animation (logo) ──────────────── */
+@keyframes flicker {
+  0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { opacity: 1; }
+  20%, 24%, 55% { opacity: 0.4; }
+}
+.flicker { animation: flicker 4s infinite; }
+
+/* ── Slide In ──────────────────────────────── */
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.slide-in { animation: slideIn 0.4s ease; }
+
+/* ── Pulse Ring ────────────────────────────── */
+@keyframes pulseRing {
+  0%   { transform: scale(1); opacity: 0.8; }
+  100% { transform: scale(2); opacity: 0; }
+}
+.pulse-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid var(--cyan);
+  animation: pulseRing 1.5s ease-out infinite;
+}
