@@ -13,22 +13,22 @@ int main() {
     std::cout << "╚══════════════════════════════════════╝\n\n";
 
     try {
-        // Single io_context — WebSocket server + ClientCore dono isme chalenge
-        boost::asio::io_context ioc;
+        // Shared io_context — WebSocket + ClientCore dono isme
+        auto ioc = std::make_shared<boost::asio::io_context>();
 
-        // ClientCore — LanShare server se baat karega
+        // ClientCore
         auto client = std::make_shared<LanShare::ClientCore>();
 
-        // WebSocket server — browser se baat karega
-        auto wsServer = std::make_shared<LanShare::WebSocketServer>(ioc, 8080);
+        // WebSocket server
+        auto wsServer = std::make_shared<LanShare::WebSocketServer>(*ioc, 8080);
 
-        // MessageHandler — dono ko jodega
+        // MessageHandler
         auto handler = std::make_shared<LanShare::MessageHandler>(client, wsServer);
 
         // Saare callbacks register karo
         handler->registerCallbacks();
 
-        // ClientCore ka async IO start karo
+        // ClientCore async IO start karo
         client->startAsync();
 
         // WebSocket server start karo
@@ -38,8 +38,11 @@ int main() {
         std::cout << "[App] Open browser at: http://localhost:8080\n";
         std::cout << "[App] Press Ctrl+C to stop\n\n";
 
-        // WebSocket ka io_context run karo — yahan block hoga
-        ioc.run();
+        // Work guard — io_context band na ho
+        auto work = boost::asio::make_work_guard(*ioc);
+
+        // WebSocket ka io_context run karo
+        ioc->run();
 
     } catch (const std::exception& e) {
         std::cerr << "[FATAL] " << e.what() << "\n";
