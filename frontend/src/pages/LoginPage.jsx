@@ -26,21 +26,16 @@ export default function LoginPage({ send }) {
   };
 
   // Auto connect on load if IP saved
- useEffect(() => {
-  const savedIP = localStorage.getItem("lanshare_ip");
-  const savedHostname = localStorage.getItem("lanshare_hostname");
-  if (savedIP && savedHostname) {
-    console.log("Auto-connecting to:", savedIP);
-    setTimeout(() => {
-      send({ 
-        type: "connect", 
-        ip: savedIP, 
-        port: "5555", 
-        hostname: savedHostname 
-      });
-    }, 1500); // 1.5 second wait — WebSocket settle hone do
-  }
-}, []); // sirf ek baar — page load pe
+  useEffect(() => {
+    if (connected) return;
+    const savedIP = localStorage.getItem("lanshare_ip");
+    if (savedIP) {
+      setTimeout(() => {
+        const hostname = getHostname();
+        send({ type: "connect", ip: savedIP, port: "5555", hostname });
+      }, 1000);
+    }
+  }, []);
 
   return (
     <div style={{

@@ -33,7 +33,7 @@ export function useWebSocket() {
     ws.current.onclose = () => {
       console.log("❌ Disconnected from bridge");
       useChatStore.getState().setConnected(false);
-      setTimeout(connect, 3000);
+      //setTimeout(connect, 3000);
     };
   }, [handleServerMessage]);
 
