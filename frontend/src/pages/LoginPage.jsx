@@ -1,32 +1,46 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useChatStore } from "../store/chatStore";
+
 export default function LoginPage({ send }) {
-  const [ip, setIp] = useState("127.0.0.1");
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const [ip, setIp] = useState(() => localStorage.getItem("lanshare_ip") || "127.0.0.1");
   const [isConnecting, setIsConnecting] = useState(false);
-  const [tab, setTab] = useState("login"); // "login" | "register"
   const connected = useChatStore((s) => s.connected);
 
-  const handleConnect = () => {
-  if (!ip) return;
-  setIsConnecting(true);
-  send({ type: "connect", ip, port: "5555" });
-  // Wait 2 seconds before allowing login/register
-  setTimeout(() => {
-    setIsConnecting(false);
-  }, 2000);
-};
+  // Get device hostname — browser mein direct nahi milta
+  // toh machine name use karenge ya random ID
+  const getHostname = () => {
+    const stored = localStorage.getItem("lanshare_hostname");
+    if (stored) return stored;
+    const hostname = "device-" + Math.random().toString(36).substr(2, 6).toUpperCase();
+    localStorage.setItem("lanshare_hostname", hostname);
+    return hostname;
+  };
 
-  const handleSubmit = () => {
-  if (!username || !password) return;
-  if (!connected) {
-    alert("Pehle PING karo aur connected hone ka wait karo!");
-    return;
+  const handleConnect = () => {
+    if (!ip) return;
+    setIsConnecting(true);
+    localStorage.setItem("lanshare_ip", ip);
+    const hostname = getHostname();
+    send({ type: "connect", ip, port: "5555", hostname });
+    setTimeout(() => setIsConnecting(false), 2000);
+  };
+
+  // Auto connect on load if IP saved
+ useEffect(() => {
+  const savedIP = localStorage.getItem("lanshare_ip");
+  const savedHostname = localStorage.getItem("lanshare_hostname");
+  if (savedIP && savedHostname) {
+    console.log("Auto-connecting to:", savedIP);
+    setTimeout(() => {
+      send({ 
+        type: "connect", 
+        ip: savedIP, 
+        port: "5555", 
+        hostname: savedHostname 
+      });
+    }, 1500); // 1.5 second wait — WebSocket settle hone do
   }
-  if (tab === "login") send({ type: "login", username, password });
-  else send({ type: "register", username, password });
-};
+}, []); // sirf ek baar — page load pe
 
   return (
     <div style={{
@@ -36,7 +50,21 @@ export default function LoginPage({ send }) {
       <div className="grid-bg" />
       <div className="scanlines" />
 
-      {/* ── LEFT — Form ───────────────────────────── */}
+      {/* Glow orbs */}
+      <div style={{
+        position: "fixed", top: "20%", left: "15%",
+        width: 400, height: 400, borderRadius: "50%",
+        background: "radial-gradient(circle, rgba(0,255,231,0.06) 0%, transparent 70%)",
+        pointerEvents: "none"
+      }} />
+      <div style={{
+        position: "fixed", bottom: "20%", right: "15%",
+        width: 350, height: 350, borderRadius: "50%",
+        background: "radial-gradient(circle, rgba(112,0,255,0.08) 0%, transparent 70%)",
+        pointerEvents: "none"
+      }} />
+
+      {/* LEFT — Form */}
       <div style={{
         position: "relative", zIndex: 10,
         width: "45%", minWidth: 380,
@@ -53,34 +81,42 @@ export default function LoginPage({ send }) {
             fontSize: 26, fontWeight: 700, letterSpacing: 4,
             color: "var(--cyan)",
             textShadow: "0 0 20px rgba(0,255,231,0.8), 0 0 60px rgba(0,255,231,0.3)"
-          }}>
-            ⚡ LANSHARE
-          </div>
+          }}>⚡ LANSHARE</div>
           <div style={{
             fontFamily: "'JetBrains Mono', monospace",
             fontSize: 10, letterSpacing: 5,
             color: "var(--text-muted)", marginTop: 4
-          }}>
-            SECURE LAN MESSAGING v2.0
-          </div>
+          }}>SECURE LAN MESSAGING v2.0</div>
         </div>
 
         {/* Greeting */}
-        <div style={{ width: "100%", marginBottom: 28 }}>
+        <div style={{ width: "100%", marginBottom: 36 }}>
           <div style={{
             fontSize: 28, fontWeight: 700,
-            color: "var(--text-primary)", marginBottom: 6
-          }}>
-            {tab === "login" ? "Welcome back." : "Create account."}
-          </div>
+            color: "var(--text-primary)", marginBottom: 8
+          }}>Connect to network.</div>
           <div style={{ fontSize: 13, color: "var(--text-muted)" }}>
-            {tab === "login"
-              ? "Sign in to your secure session"
-              : "Register and start chatting securely"}
+            Enter server IP — you'll be auto-identified by your device
+          </div>
+
+          {/* Device name display */}
+          <div style={{
+            marginTop: 14, padding: "8px 14px",
+            background: "rgba(0,255,231,0.05)",
+            border: "1px solid rgba(0,255,231,0.15)",
+            borderRadius: 8,
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: 11
+          }}>
+            <span style={{ color: "var(--text-muted)" }}>YOUR DEVICE: </span>
+            <span style={{ color: "var(--cyan)" }}>
+              {localStorage.getItem("lanshare_hostname") ||
+                "Generating..."}
+            </span>
           </div>
         </div>
 
-        {/* Server IP row */}
+        {/* Server IP */}
         <div style={{ width: "100%", marginBottom: 20 }}>
           <label style={{
             display: "block", marginBottom: 6,
@@ -95,6 +131,7 @@ export default function LoginPage({ send }) {
               value={ip}
               onChange={(e) => setIp(e.target.value)}
               placeholder="192.168.1.x"
+              onKeyDown={(e) => e.key === "Enter" && handleConnect()}
             />
             <button
               className="btn-neon"
@@ -128,81 +165,18 @@ export default function LoginPage({ send }) {
           </div>
         </div>
 
-        {/* Divider */}
-        <div style={{
-          width: "100%", height: 1, marginBottom: 20,
-          background: "linear-gradient(90deg, transparent, rgba(0,255,231,0.15), transparent)"
-        }} />
-
-        {/* Tab switcher */}
-        <div style={{
-          width: "100%", display: "flex",
-          background: "rgba(255,255,255,0.03)",
-          border: "1px solid rgba(0,255,231,0.1)",
-          borderRadius: 10, padding: 4, marginBottom: 20, gap: 4
-        }}>
-          {["login", "register"].map((t) => (
-            <button key={t} onClick={() => setTab(t)} style={{
-              flex: 1, padding: "8px 0",
-              background: tab === t
-                ? "rgba(0,255,231,0.1)" : "transparent",
-              border: tab === t
-                ? "1px solid rgba(0,255,231,0.25)" : "1px solid transparent",
-              borderRadius: 8,
-              color: tab === t ? "var(--cyan)" : "var(--text-muted)",
-              fontFamily: "'JetBrains Mono', monospace",
-              fontSize: 11, letterSpacing: 2,
-              textTransform: "uppercase", cursor: "pointer",
-              transition: "all 0.2s ease"
-            }}>
-              {t}
-            </button>
-          ))}
-        </div>
-
-        {/* Username */}
-        <div style={{ width: "100%", marginBottom: 14 }}>
-          <label style={{
-            display: "block", marginBottom: 6, fontSize: 10,
-            letterSpacing: 2, color: "var(--text-muted)",
-            fontFamily: "'JetBrains Mono', monospace",
-            textTransform: "uppercase"
-          }}>Username</label>
-          <input
-            className="input-neon"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            placeholder="enter username"
-            onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
-          />
-        </div>
-
-        {/* Password */}
-        <div style={{ width: "100%", marginBottom: 28 }}>
-          <label style={{
-            display: "block", marginBottom: 6, fontSize: 10,
-            letterSpacing: 2, color: "var(--text-muted)",
-            fontFamily: "'JetBrains Mono', monospace",
-            textTransform: "uppercase"
-          }}>Password</label>
-          <input
-            className="input-neon"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="enter password"
-            onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
-          />
-        </div>
-
-        {/* Submit button */}
+        {/* Connect button */}
         <button
           className="btn-neon"
-          onClick={handleSubmit}
-          disabled={!connected}
-          style={{ width: "100%", padding: "13px 0", fontSize: 12, letterSpacing: 3 }}
+          onClick={handleConnect}
+          disabled={isConnecting}
+          style={{
+            width: "100%", padding: "13px 0",
+            fontSize: 12, letterSpacing: 3,
+            marginTop: 12
+          }}
         >
-          {tab === "login" ? "SIGN IN" : "CREATE ACCOUNT"}
+          {connected ? "✓ CONNECTED — JOINING..." : "CONNECT & JOIN"}
         </button>
 
         {/* Footer */}
@@ -216,60 +190,48 @@ export default function LoginPage({ send }) {
         </div>
       </div>
 
-      {/* ── RIGHT — Visual Panel ──────────────────── */}
+      {/* RIGHT — Visual Panel */}
       <div style={{
         position: "relative", flex: 1, zIndex: 10,
         display: "flex", flexDirection: "column",
         justifyContent: "center", alignItems: "center",
         overflow: "hidden"
       }}>
-
-        {/* Big glow orb */}
         <div style={{
-          position: "absolute",
-          width: 500, height: 500, borderRadius: "50%",
+          position: "absolute", width: 500, height: 500,
+          borderRadius: "50%",
           background: "radial-gradient(circle, rgba(0,255,231,0.08) 0%, rgba(112,0,255,0.06) 50%, transparent 70%)",
           pointerEvents: "none"
         }} />
-
-        {/* Rotating ring 1 */}
         <div style={{
-          position: "absolute",
-          width: 340, height: 340, borderRadius: "50%",
+          position: "absolute", width: 340, height: 340,
+          borderRadius: "50%",
           border: "1px solid rgba(0,255,231,0.12)",
           animation: "spin 20s linear infinite"
         }} />
-
-        {/* Rotating ring 2 */}
         <div style={{
-          position: "absolute",
-          width: 440, height: 440, borderRadius: "50%",
+          position: "absolute", width: 440, height: 440,
+          borderRadius: "50%",
           border: "1px solid rgba(112,0,255,0.1)",
           animation: "spin 30s linear infinite reverse"
         }} />
-
-        {/* Rotating ring 3 */}
         <div style={{
-          position: "absolute",
-          width: 240, height: 240, borderRadius: "50%",
+          position: "absolute", width: 240, height: 240,
+          borderRadius: "50%",
           border: "1px dashed rgba(0,255,231,0.08)",
           animation: "spin 15s linear infinite"
         }} />
-
-        {/* Center icon */}
         <div style={{
           position: "relative", zIndex: 2,
           width: 100, height: 100, borderRadius: "50%",
           background: "rgba(0,255,231,0.06)",
           border: "1px solid rgba(0,255,231,0.3)",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          boxShadow: "0 0 40px rgba(0,255,231,0.2), inset 0 0 30px rgba(0,255,231,0.05)",
+          display: "flex", alignItems: "center",
+          justifyContent: "center",
+          boxShadow: "0 0 40px rgba(0,255,231,0.2)",
           fontSize: 40
-        }}>
-          🔒
-        </div>
+        }}>🔒</div>
 
-        {/* Floating feature pills */}
         {[
           { label: "AES-256-GCM ENCRYPTED", top: "25%", left: "10%", color: "var(--cyan)" },
           { label: "NO INTERNET REQUIRED", top: "35%", right: "8%", color: "#a855f7" },
@@ -286,31 +248,22 @@ export default function LoginPage({ send }) {
             borderRadius: 999,
             fontFamily: "'JetBrains Mono', monospace",
             fontSize: 10, letterSpacing: 2,
-            color: pill.color,
-            whiteSpace: "nowrap",
+            color: pill.color, whiteSpace: "nowrap",
             boxShadow: `0 0 12px ${pill.color}22`
-          }}>
-            {pill.label}
-          </div>
+          }}>{pill.label}</div>
         ))}
 
-        {/* Bottom tagline */}
         <div style={{
-          position: "absolute", bottom: 40,
-          textAlign: "center",
+          position: "absolute", bottom: 40, textAlign: "center",
           fontFamily: "'JetBrains Mono', monospace",
-          fontSize: 11, letterSpacing: 3,
-          color: "var(--text-muted)"
-        }}>
-          ENCRYPTED · PRIVATE · LOCAL
-        </div>
+          fontSize: 11, letterSpacing: 3, color: "var(--text-muted)"
+        }}>ENCRYPTED · PRIVATE · LOCAL</div>
       </div>
 
-      {/* Spin keyframe */}
       <style>{`
         @keyframes spin {
           from { transform: rotate(0deg); }
-          to   { transform: rotate(360deg); }
+          to { transform: rotate(360deg); }
         }
       `}</style>
     </div>

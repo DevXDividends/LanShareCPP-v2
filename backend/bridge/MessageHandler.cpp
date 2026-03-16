@@ -12,13 +12,11 @@ namespace LanShare {
 // ─────────────────────────────────────────────
 //  Constructor
 // ─────────────────────────────────────────────
-
 MessageHandler::MessageHandler(std::shared_ptr<ClientCore> client,
                                std::shared_ptr<WebSocketServer> wsServer)
     : client_(client)
     , wsServer_(wsServer)
 {}
-
 // ─────────────────────────────────────────────
 //  Register all callbacks
 // ─────────────────────────────────────────────
@@ -91,8 +89,29 @@ void MessageHandler::registerCallbacks() {
 
 void MessageHandler::onAuth(bool success, const std::string& userID,
                              const std::string& reason) {
+    if (!success) {
+        if (reason.find("already exists") != std::string::npos && 
+            !pendingHostname_.empty()) {
+            // Username exists — try login
+            std::cout << "[Bridge] Already registered, logging in...\n";
+            std::string hostname = pendingHostname_;
+            client_->login(hostname, "lanshare-auto-" + hostname);
+            return;
+        }
+        // Other auth failure
+        wsServer_->broadcast(makeJson("auth", {
+            {"success", "false"},
+            {"userID",  ""},
+            {"reason",  reason}
+        }));
+        return;
+    }
+    
+    // Success!
+    pendingHostname_ = "";
+    std::cout << "[Bridge] Logged in as: " << userID << "\n";
     wsServer_->broadcast(makeJson("auth", {
-        {"success", success ? "true" : "false"},
+        {"success", "true"},
         {"userID",  userID},
         {"reason",  reason}
     }));
@@ -103,6 +122,12 @@ void MessageHandler::onConnection(bool connected, const std::string& reason) {
         {"connected", connected ? "true" : "false"},
         {"reason",    reason}
     }));
+    
+    if (connected && !pendingHostname_.empty()) {
+        std::cout << "[Bridge] Auto-login: " << pendingHostname_ << "\n";
+        // Try register first — server will fail if already exists
+        client_->registerUser(pendingHostname_, "lanshare-auto-" + pendingHostname_);
+    }
 }
 
 void MessageHandler::onMessage(const std::string& fromUserID,
@@ -200,10 +225,14 @@ void MessageHandler::handleCommand(const std::string& json) {
     std::string type = extract("type");
 
     if (type == "connect") {
-        std::string ip   = extract("ip");
-        std::string port = extract("port");
-        unsigned short p = port.empty() ? 5555 : (unsigned short)std::stoi(port);
-        client_->connect(ip, p);
+    std::string ip       = extract("ip");
+    std::string port     = extract("port");
+    std::string hostname = extract("hostname");
+    unsigned short p = port.empty() ? 5555 : (unsigned short)std::stoi(port);
+    
+    // Store hostname for auto-login after connection
+    pendingHostname_ = hostname.empty() ? "unknown-device" : hostname;
+    client_->connect(ip, p);
 
     } else if (type == "register") {
         client_->registerUser(extract("username"), extract("password"));

@@ -54,7 +54,7 @@ add_library(LanShareBridge STATIC
     bridge/MessageHandler.h    bridge/MessageHandler.cpp
 )
 target_link_libraries(LanShareBridge
-    LanShareClient LanShareCommon Boost::system Boost::thread)
+    LanShareClient LanShareServer LanShareCommon Boost::system Boost::thread)
 
 # ── Server exe ─────────────────────────────────────────────────────────────
 add_executable(lanshare_server server/main.cpp)

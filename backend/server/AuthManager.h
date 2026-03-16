@@ -35,6 +35,8 @@ public:
     // Password management
     bool changePassword(const std::string& userID, const std::string& oldPassword, 
                        const std::string& newPassword);
+    // Auto register or login using hostname — no password needed
+bool autoRegisterOrLogin(const std::string& hostname, std::string& outUserID);
     
     // Persistence
     void saveToFile(const std::string& filename);

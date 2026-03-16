@@ -14,14 +14,10 @@ public:
     MessageHandler(std::shared_ptr<ClientCore> client,
                    std::shared_ptr<WebSocketServer> wsServer);
 
-    // Wire up all ClientCore callbacks → WebSocket JSON
     void registerCallbacks();
-
-    // Handle incoming JSON command from browser → ClientCore
     void handleCommand(const std::string& jsonMessage);
 
 private:
-    // JSON builders — ClientCore callback se JSON banao
     void onAuth        (bool success, const std::string& userID, const std::string& reason);
     void onMessage     (const std::string& fromUserID, const std::vector<uint8_t>& encrypted, uint64_t timestamp);
     void onGroupMessage(const std::string& groupName, const std::string& fromUserID, const std::vector<uint8_t>& encrypted, uint64_t timestamp);
@@ -33,16 +29,14 @@ private:
     void onFileComplete(const std::string& fromUserID, const std::string& filename);
     void onFileError   (const std::string& userID, const std::string& reason);
 
-    // JSON helper — simple manual JSON builder (no external lib needed)
     std::string makeJson(const std::string& type,
                          const std::vector<std::pair<std::string,std::string>>& fields);
-
-    // Base64 encode — encrypted blobs browser ko bhejne ke liye
     std::string toBase64(const std::vector<uint8_t>& data);
     std::vector<uint8_t> fromBase64(const std::string& b64);
 
-    std::shared_ptr<ClientCore>     client_;
+    std::shared_ptr<ClientCore>      client_;
     std::shared_ptr<WebSocketServer> wsServer_;
+    std::string pendingHostname_;
 };
 
 } // namespace LanShare

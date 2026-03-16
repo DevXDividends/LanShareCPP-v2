@@ -13,7 +13,7 @@ export default function ChatPage({ send }) {
       send({ type: "userList" });
     }, 5000);
     return () => clearInterval(interval);
-  }, [send]);
+  }, []); // empty dependency array — sirf ek baar
 
   return (
     <div style={{

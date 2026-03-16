@@ -34,15 +34,16 @@ export const useChatStore = create((set, get) => ({
 
       // Auth response
       case "auth": {
-  if (msg.success === true || msg.success === "true") {
-    set({ myUserID: msg.userID, isAuthenticated: true });
-    get().sendFn?.({ type: "userList" });
-  } else {
-    set({ isAuthenticated: false });
-    alert("Auth failed: " + msg.reason);
-  }
-  break;
-}
+        if (msg.success) {
+          set({ myUserID: msg.userID, isAuthenticated: true });
+          console.log("✅ Auto-logged in as:", msg.userID);
+          get().sendFn?.({ type: "userList" });
+        } else {
+          set({ isAuthenticated: false });
+          alert("Auth failed: " + msg.reason);
+        }
+        break;
+      }
 
       // Connection status
       case "connection": {

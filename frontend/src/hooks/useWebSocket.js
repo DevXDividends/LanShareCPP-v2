@@ -33,12 +33,10 @@ export function useWebSocket() {
     ws.current.onclose = () => {
       console.log("❌ Disconnected from bridge");
       useChatStore.getState().setConnected(false);
-      // Auto reconnect after 3 seconds
       setTimeout(connect, 3000);
     };
   }, [handleServerMessage]);
 
-  // Send command to C++
   const send = useCallback((obj) => {
     if (ws.current?.readyState === WebSocket.OPEN) {
       ws.current.send(JSON.stringify(obj));
@@ -49,9 +47,7 @@ export function useWebSocket() {
 
   useEffect(() => {
     connect();
-    return () => {
-      ws.current?.close();
-    };
+    return () => ws.current?.close();
   }, [connect]);
 
   return { send };

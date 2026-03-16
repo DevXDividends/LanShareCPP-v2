@@ -231,6 +231,18 @@ void AuthManager::loadFromFile(const std::string& filename) {
         users_[username] = creds;
         userIDMap_[userID] = username;
     }
+    
 }
-
+bool AuthManager::autoRegisterOrLogin(const std::string& hostname, std::string& outUserID) {
+    std::string password = "lanshare-auto-" + hostname;
+    
+    // Already exists — just login
+    if (userExists(hostname)) {
+        return authenticateUser(hostname, password, outUserID);
+    }
+    
+    // New machine — auto register
+    return registerUser(hostname, password, outUserID);
+}
+    
 } // namespace LanShare

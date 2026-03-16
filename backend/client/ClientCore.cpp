@@ -27,6 +27,11 @@ ClientCore::~ClientCore() {
 
 void ClientCore::connect(const std::string& serverIP, unsigned short port) {
     try {
+        // Reset socket if already open
+        if (socket_.is_open()) {
+            boost::system::error_code ec;
+            socket_.close(ec);
+        }
         boost::asio::ip::tcp::resolver resolver(ioContext_);
         auto endpoints = resolver.resolve(serverIP, std::to_string(port));
         
