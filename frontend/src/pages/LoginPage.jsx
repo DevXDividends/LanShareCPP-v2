@@ -9,17 +9,24 @@ export default function LoginPage({ send }) {
   const connected = useChatStore((s) => s.connected);
 
   const handleConnect = () => {
-    if (!ip) return;
-    setIsConnecting(true);
-    send({ type: "connect", ip, port: "5555" });
-    setTimeout(() => setIsConnecting(false), 2000);
-  };
+  if (!ip) return;
+  setIsConnecting(true);
+  send({ type: "connect", ip, port: "5555" });
+  // Wait 2 seconds before allowing login/register
+  setTimeout(() => {
+    setIsConnecting(false);
+  }, 2000);
+};
 
   const handleSubmit = () => {
-    if (!username || !password) return;
-    if (tab === "login") send({ type: "login", username, password });
-    else send({ type: "register", username, password });
-  };
+  if (!username || !password) return;
+  if (!connected) {
+    alert("Pehle PING karo aur connected hone ka wait karo!");
+    return;
+  }
+  if (tab === "login") send({ type: "login", username, password });
+  else send({ type: "register", username, password });
+};
 
   return (
     <div style={{
