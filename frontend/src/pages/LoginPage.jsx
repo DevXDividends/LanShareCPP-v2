@@ -2,8 +2,9 @@ import { useState } from "react";
 import { useChatStore } from "../store/chatStore";
 
 export default function LoginPage({ send }) {
-  const [ip, setIp] = useState(() => localStorage.getItem("lanshare_ip") || "127.0.0.1");
-  const [isConnecting, setIsConnecting] = useState(false);
+const [ip, setIp] = useState(() => 
+  localStorage.getItem("lanshare_ip") || "127.0.0.1"
+);  const [isConnecting, setIsConnecting] = useState(false);
   const connected = useChatStore((s) => s.connected);
 
   const getHostname = () => {
