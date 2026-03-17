@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useChatStore } from "../store/chatStore";
 
 export default function LoginPage({ send }) {
@@ -6,8 +6,6 @@ export default function LoginPage({ send }) {
   const [isConnecting, setIsConnecting] = useState(false);
   const connected = useChatStore((s) => s.connected);
 
-  // Get device hostname — browser mein direct nahi milta
-  // toh machine name use karenge ya random ID
   const getHostname = () => {
     const stored = localStorage.getItem("lanshare_hostname");
     if (stored) return stored;
@@ -17,25 +15,13 @@ export default function LoginPage({ send }) {
   };
 
   const handleConnect = () => {
-    if (!ip) return;
+    if (!ip || isConnecting) return;
     setIsConnecting(true);
     localStorage.setItem("lanshare_ip", ip);
     const hostname = getHostname();
     send({ type: "connect", ip, port: "5555", hostname });
-    setTimeout(() => setIsConnecting(false), 2000);
+    setTimeout(() => setIsConnecting(false), 3000);
   };
-
-  // Auto connect on load if IP saved
-  useEffect(() => {
-    if (connected) return;
-    const savedIP = localStorage.getItem("lanshare_ip");
-    if (savedIP) {
-      setTimeout(() => {
-        const hostname = getHostname();
-        send({ type: "connect", ip: savedIP, port: "5555", hostname });
-      }, 1000);
-    }
-  }, []);
 
   return (
     <div style={{
@@ -45,7 +31,6 @@ export default function LoginPage({ send }) {
       <div className="grid-bg" />
       <div className="scanlines" />
 
-      {/* Glow orbs */}
       <div style={{
         position: "fixed", top: "20%", left: "15%",
         width: 400, height: 400, borderRadius: "50%",
@@ -94,7 +79,7 @@ export default function LoginPage({ send }) {
             Enter server IP — you'll be auto-identified by your device
           </div>
 
-          {/* Device name display */}
+          {/* Device name */}
           <div style={{
             marginTop: 14, padding: "8px 14px",
             background: "rgba(0,255,231,0.05)",
@@ -105,8 +90,7 @@ export default function LoginPage({ send }) {
           }}>
             <span style={{ color: "var(--text-muted)" }}>YOUR DEVICE: </span>
             <span style={{ color: "var(--cyan)" }}>
-              {localStorage.getItem("lanshare_hostname") ||
-                "Generating..."}
+              {localStorage.getItem("lanshare_hostname") || "Generating..."}
             </span>
           </div>
         </div>
@@ -120,23 +104,13 @@ export default function LoginPage({ send }) {
             fontFamily: "'JetBrains Mono', monospace",
             textTransform: "uppercase"
           }}>Server IP</label>
-          <div style={{ display: "flex", gap: 8 }}>
-            <input
-              className="input-neon"
-              value={ip}
-              onChange={(e) => setIp(e.target.value)}
-              placeholder="192.168.1.x"
-              onKeyDown={(e) => e.key === "Enter" && handleConnect()}
-            />
-            <button
-              className="btn-neon"
-              onClick={handleConnect}
-              disabled={isConnecting}
-              style={{ whiteSpace: "nowrap", minWidth: 96, fontSize: 11 }}
-            >
-              {isConnecting ? "···" : connected ? "✓ OK" : "PING"}
-            </button>
-          </div>
+          <input
+            className="input-neon"
+            value={ip}
+            onChange={(e) => setIp(e.target.value)}
+            placeholder="192.168.1.x"
+            onKeyDown={(e) => e.key === "Enter" && handleConnect()}
+          />
 
           {/* Status pill */}
           <div style={{
@@ -160,18 +134,17 @@ export default function LoginPage({ send }) {
           </div>
         </div>
 
-        {/* Connect button */}
+        {/* Single Connect Button */}
         <button
           className="btn-neon"
           onClick={handleConnect}
           disabled={isConnecting}
           style={{
             width: "100%", padding: "13px 0",
-            fontSize: 12, letterSpacing: 3,
-            marginTop: 12
+            fontSize: 12, letterSpacing: 3, marginTop: 12
           }}
         >
-          {connected ? "✓ CONNECTED — JOINING..." : "CONNECT & JOIN"}
+          {isConnecting ? "CONNECTING···" : connected ? "✓ CONNECTED" : "CONNECT"}
         </button>
 
         {/* Footer */}
@@ -199,20 +172,17 @@ export default function LoginPage({ send }) {
           pointerEvents: "none"
         }} />
         <div style={{
-          position: "absolute", width: 340, height: 340,
-          borderRadius: "50%",
+          position: "absolute", width: 340, height: 340, borderRadius: "50%",
           border: "1px solid rgba(0,255,231,0.12)",
           animation: "spin 20s linear infinite"
         }} />
         <div style={{
-          position: "absolute", width: 440, height: 440,
-          borderRadius: "50%",
+          position: "absolute", width: 440, height: 440, borderRadius: "50%",
           border: "1px solid rgba(112,0,255,0.1)",
           animation: "spin 30s linear infinite reverse"
         }} />
         <div style={{
-          position: "absolute", width: 240, height: 240,
-          borderRadius: "50%",
+          position: "absolute", width: 240, height: 240, borderRadius: "50%",
           border: "1px dashed rgba(0,255,231,0.08)",
           animation: "spin 15s linear infinite"
         }} />
@@ -221,10 +191,8 @@ export default function LoginPage({ send }) {
           width: 100, height: 100, borderRadius: "50%",
           background: "rgba(0,255,231,0.06)",
           border: "1px solid rgba(0,255,231,0.3)",
-          display: "flex", alignItems: "center",
-          justifyContent: "center",
-          boxShadow: "0 0 40px rgba(0,255,231,0.2)",
-          fontSize: 40
+          display: "flex", alignItems: "center", justifyContent: "center",
+          boxShadow: "0 0 40px rgba(0,255,231,0.2)", fontSize: 40
         }}>🔒</div>
 
         {[
