@@ -119,15 +119,3 @@ app.on('window-all-closed', () => {
   if (bridgeProcess) { bridgeProcess.kill(); bridgeProcess = null; }
   app.quit();
 });
-```
-
----
-
-## Kaise Kaam Karega
-```
-Laptop 1 — pehle kholo:
-Port 5555 free hai → SERVER + BRIDGE start
-
-Laptop 2 — baad mein kholo:
-Port 5555 busy hai → sirf BRIDGE start
-IP field mein Laptop 1 ka IP daalo → CONNECT
